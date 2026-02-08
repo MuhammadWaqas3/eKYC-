@@ -1,0 +1,102 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:14-alpine
+    container_name: ekyc_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ekyc_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - ekyc_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ekyc_backend
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./backend:/app
+      - ./uploads:/app/uploads
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/ekyc_db
+      - FRONTEND_URL=http://localhost:3000
+      - RASA_API_URL=http://rasa:5005
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - ekyc_network
+    restart: unless-stopped
+
+  # Rasa Server
+  rasa:
+    build:
+      context: ./rasa
+      dockerfile: Dockerfile
+    container_name: ekyc_rasa
+    command: rasa run --enable-api --cors "*"
+    volumes:
+      - ./rasa:/app
+    ports:
+      - "5005:5005"
+    networks:
+      - ekyc_network
+    restart: unless-stopped
+
+  # Rasa Actions Server
+  rasa_actions:
+    build:
+      context: ./rasa
+      dockerfile: Dockerfile.actions
+    container_name: ekyc_rasa_actions
+    command: rasa run actions
+    volumes:
+      - ./rasa:/app
+    ports:
+      - "5055:5055"
+    environment:
+      - BACKEND_URL=http://backend:8000/api
+    networks:
+      - ekyc_network
+    restart: unless-stopped
+
+  # Next.js Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ekyc_frontend
+    command: npm run dev
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api
+    networks:
+      - ekyc_network
+    restart: unless-stopped
+
+networks:
+  ekyc_network:
+    driver: bridge
+
+volumes:
+  postgres_data:

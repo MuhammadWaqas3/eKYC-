@@ -1,0 +1,106 @@
+# .gitignore for eKYC System
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+ENV/
+env/
+.venv
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Database
+*.db
+*.sqlite3
+*.sql
+
+# Uploads and user data
+uploads/
+*.jpg
+*.jpeg
+*.png
+*.mp4
+*.avi
+
+# Logs
+logs/
+*.log
+*.log.*
+audit.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Rasa
+rasa/models/
+rasa/.rasa/
+rasa/results/
+
+# ML Models (large files)
+backend/models/shape_predictor_68_face_landmarks.dat
+*.dat
+*.h5
+*.pb
+*.pth
+
+# Node modules (frontend)
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+
+# Package managers
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-debug.log*
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# Docker
+docker-compose.override.yml
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Sensitive data
+*.key
+*.pem
+*.crt
