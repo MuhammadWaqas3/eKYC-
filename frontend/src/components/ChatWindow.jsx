@@ -4,6 +4,7 @@ import { Send, Sparkles, Upload } from "lucide-react";
 import styles from "./ChatWindow.module.css";
 import MessageBubble from "./MessageBubble";
 import CameraOverlay from "./CameraOverlay";
+import CNICUploadOverlay from "./CNICUploadOverlay";
 import FingerprintOverlay from "./FingerprintOverlay";
 
 export default function ChatWindow() {
@@ -122,14 +123,14 @@ export default function ChatWindow() {
 
     // Start verification process
     const startVerification = () => {
-        setVerificationStep('cnic_front');
-        setActiveOverlay('cnic-front');
+        setVerificationStep('cnic');
+        setActiveOverlay('cnic');
 
         // Add bot message
         const botMsg = {
             id: Date.now().toString(),
             role: "bot",
-            content: "Great! Let's start with your CNIC. Please scan the front of your CNIC.",
+            content: "Great! Let's start with your CNIC. Please upload both front and back images of your CNIC.",
             timestamp: Date.now(),
         };
         setChatState(prev => ({
@@ -138,40 +139,17 @@ export default function ChatWindow() {
         }));
     };
 
-    // Handle CNIC Front capture
-    const handleCNICFrontCapture = async (imageData) => {
-        setCapturedData(prev => ({ ...prev, cnicFront: imageData }));
-        setActiveOverlay(null);
-
-        // Add confirmation message
-        const botMsg = {
-            id: Date.now().toString(),
-            role: "bot",
-            content: "✓ CNIC Front captured! Now, please scan the back of your CNIC.",
-            timestamp: Date.now(),
-        };
-        setChatState(prev => ({
-            ...prev,
-            messages: [...prev.messages, botMsg]
-        }));
-
-        // Move to CNIC back
-        setTimeout(() => {
-            setVerificationStep('cnic_back');
-            setActiveOverlay('cnic-back');
-        }, 1000);
-    };
-
-    // Handle CNIC Back capture
-    const handleCNICBackCapture = async (imageData) => {
-        setCapturedData(prev => ({ ...prev, cnicBack: imageData }));
+    // Handle CNIC Upload (both front and back)
+    const handleCNICUpload = async (data) => {
+        setCapturedData(prev => ({ ...prev, cnicFront: data.front, cnicBack: data.back }));
         setActiveOverlay(null);
 
         // Send CNIC data to backend
         try {
             const formData = new FormData();
-            formData.append('cnic_front', dataURLtoFile(capturedData.cnicFront, 'cnic_front.jpg'));
-            formData.append('cnic_back', dataURLtoFile(imageData, 'cnic_back.jpg'));
+            // data.front and data.back are now File objects, not base64 strings
+            formData.append('cnic_front', data.front);
+            formData.append('cnic_back', data.back);
             formData.append('session_id', sessionId);
 
             await fetch('/api/chat/submit-cnic', {
@@ -185,7 +163,7 @@ export default function ChatWindow() {
         const botMsg = {
             id: Date.now().toString(),
             role: "bot",
-            content: "✓ CNIC captured successfully! Next, let's verify your face with a liveness check.",
+            content: "✓ CNIC uploaded successfully! Next, let's verify your face with a liveness check.",
             timestamp: Date.now(),
         };
         setChatState(prev => ({
@@ -342,18 +320,10 @@ export default function ChatWindow() {
                 </div>
             </div>
 
-            {/* Camera Overlays */}
-            {activeOverlay === 'cnic-front' && (
-                <CameraOverlay
-                    mode="cnic-front"
-                    onCapture={handleCNICFrontCapture}
-                    onClose={() => setActiveOverlay(null)}
-                />
-            )}
-            {activeOverlay === 'cnic-back' && (
-                <CameraOverlay
-                    mode="cnic-back"
-                    onCapture={handleCNICBackCapture}
+            {/* Upload/Camera Overlays */}
+            {activeOverlay === 'cnic' && (
+                <CNICUploadOverlay
+                    onCapture={handleCNICUpload}
                     onClose={() => setActiveOverlay(null)}
                 />
             )}

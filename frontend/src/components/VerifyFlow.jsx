@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import styles from "./VerifyFlow.module.css";
 import BiometricCapture from "./BiometricCapture";
+import CNICUpload from "./CNICUpload";
 import FingerprintScanner from "./FingerprintScanner";
 import { ShieldCheck, CheckCircle, ArrowRight, AlertTriangle, Loader2 } from "lucide-react";
 
@@ -50,12 +51,12 @@ export default function VerifyFlow({ token }) {
 
             if (response.data.success && response.data.extracted_data) {
                 setExtractedData(response.data.extracted_data);
-                setStep(3); // Move to Selfie step
+                setStep(2); // Move to Selfie step
             } else {
                 // If success is true but no data, it's a validation error
                 const msg = response.data.message || (response.data.validation_errors?.join(", ")) || "CNIC verification failed.";
                 setError(msg);
-                setStep(1); // Reset to front capture so they can retake
+                setStep(1); // Reset to CNIC upload so they can retake
             }
         } catch (e) {
             console.error(e);
@@ -92,7 +93,7 @@ export default function VerifyFlow({ token }) {
                 await axios.post(`${API_BASE}/liveness-check?token=${token}`, livenessFormData);
             }
 
-            setStep(4); // Move to Fingerprint
+            setStep(3); // Move to Fingerprint
         } catch (e) {
             console.error(e);
             setError(e.response?.data?.detail || "Verification failed. Please try again.");
@@ -107,7 +108,7 @@ export default function VerifyFlow({ token }) {
         try {
             const response = await axios.post(`${API_BASE}/finalize?token=${token}`);
             if (response.data.success) {
-                setStep(6); // Success
+                setStep(5); // Success
             }
         } catch (e) {
             console.error(e);
@@ -159,25 +160,14 @@ export default function VerifyFlow({ token }) {
                 )}
 
                 {step === 1 && (
-                    <BiometricCapture
-                        mode="cnic-front"
-                        onCapture={(img) => {
-                            setData(prev => ({ ...prev, cnicFront: img }));
-                            setStep(2);
+                    <CNICUpload
+                        onCapture={(frontImg, backImg) => {
+                            handleCNICCapture(frontImg, backImg);
                         }}
                     />
                 )}
 
                 {step === 2 && (
-                    <BiometricCapture
-                        mode="cnic-back"
-                        onCapture={(img) => {
-                            handleCNICCapture(data.cnicFront, img);
-                        }}
-                    />
-                )}
-
-                {step === 3 && (
                     <BiometricCapture
                         mode="selfie"
                         onCapture={(selfieData) => {
@@ -186,7 +176,7 @@ export default function VerifyFlow({ token }) {
                     />
                 )}
 
-                {step === 4 && (
+                {step === 3 && (
                     <div className={styles.stepContainer}>
                         <h2>Fingerprint Verification</h2>
                         <p>Place your thumb on the scanner. (Simulated for this demo)</p>
@@ -196,7 +186,7 @@ export default function VerifyFlow({ token }) {
                     </div>
                 )}
 
-                {step === 6 && (
+                {step === 5 && (
                     <div className={styles.success}>
                         <CheckCircle size={64} className={styles.successIcon} />
                         <h2>Verification Successful!</h2>
@@ -207,7 +197,7 @@ export default function VerifyFlow({ token }) {
             </div>
 
             <div className={styles.progress}>
-                <div className={styles.progressBar} style={{ width: `${(step / 6) * 100}%` }}></div>
+                <div className={styles.progressBar} style={{ width: `${(step / 5) * 100}%` }}></div>
             </div>
         </div>
     );

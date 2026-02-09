@@ -12,7 +12,8 @@ import uuid
 
 from database import get_db, User, VerificationSession, CNICData, BiometricData, Account, VerificationStatus
 from security import jwt_handler, encryption_service, audit_logger
-from services.cv import cnic_ocr_service, face_match_service, liveness_service 
+from services.cv import face_match_service, liveness_service
+from services.ocr_service import tesseract_ocr_service
 from services.validation import cnic_validator
 from config import settings
 
@@ -162,7 +163,7 @@ async def upload_cnic(
         audit_logger.log_cnic_uploaded(user_id, session_id)
         
         # Extract CNIC data using OCR
-        extracted_data = cnic_ocr_service.extract_cnic_data(front_path, back_path)
+        extracted_data = tesseract_ocr_service.extract_cnic_data(front_path, back_path)
         
         # Validate extracted data
         is_valid, validation_errors = cnic_validator.validate_cnic_data(extracted_data)

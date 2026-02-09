@@ -190,3 +190,104 @@
     font-size: 0.8rem;
     font-weight: 600;
 }
+
+/* Upload Component Styles */
+.uploadContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+    margin-bottom: 24px;
+}
+
+.uploadSection {
+    width: 100%;
+}
+
+.uploadTitle {
+    display: flex;
+    align-items: center;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.uploadBox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    min-height: 200px;
+}
+
+.uploadBox:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.uploadIcon {
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 12px;
+}
+
+.uploadBox p {
+    color: white;
+    font-size: 1rem;
+    margin-bottom: 8px;
+}
+
+.uploadHint {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.85rem;
+}
+
+.previewSection {
+    position: relative;
+    width: 100%;
+}
+
+.clearBtn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin: 12px auto 0;
+    transition: all 0.2s;
+}
+
+.clearBtn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.progressCircle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}

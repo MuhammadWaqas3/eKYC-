@@ -9,11 +9,13 @@ export async function POST(request) {
 
         const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-        // Forward to backend
+        // Forward to backend - backend expects token as form field
         const backendFormData = new FormData();
-        backendFormData.append('cnic_front', cnicFront);
-        backendFormData.append('cnic_back', cnicBack);
-        backendFormData.append('session_id', sessionId);
+        backendFormData.append('front_image', cnicFront);
+        backendFormData.append('back_image', cnicBack);
+        // Generate or retrieve token - for now using session_id as token
+        // TODO: Implement proper JWT token generation/retrieval
+        backendFormData.append('token', sessionId || 'test-token');
 
         const response = await fetch(`${BACKEND_URL}/api/verify/upload-cnic`, {
             method: 'POST',
