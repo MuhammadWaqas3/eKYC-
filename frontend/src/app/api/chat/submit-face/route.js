@@ -9,7 +9,7 @@ export async function POST(request) {
 
         const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-        // Forward to backend
+        // Forward to backend /api/chat/submit-face endpoint
         const backendFormData = new FormData();
         backendFormData.append('selfie', selfie);
         if (livenessVideo) {
@@ -17,7 +17,7 @@ export async function POST(request) {
         }
         backendFormData.append('session_id', sessionId);
 
-        const response = await fetch(`${BACKEND_URL}/api/verify/upload-selfie`, {
+        const response = await fetch(`${BACKEND_URL}/api/chat/submit-face`, {
             method: 'POST',
             body: backendFormData
         });

@@ -7,8 +7,8 @@ export async function POST(request) {
 
         const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-        // Forward to backend
-        const response = await fetch(`${BACKEND_URL}/api/verify/fingerprint`, {
+        // Forward to backend /api/chat/submit-fingerprint endpoint
+        const response = await fetch(`${BACKEND_URL}/api/chat/submit-fingerprint`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

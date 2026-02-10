@@ -9,21 +9,21 @@ export async function POST(request) {
 
         const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-        // Forward to backend - backend expects token as form field
+        // Forward to backend /api/chat/submit-cnic endpoint
         const backendFormData = new FormData();
-        backendFormData.append('front_image', cnicFront);
-        backendFormData.append('back_image', cnicBack);
-        // Generate or retrieve token - for now using session_id as token
-        // TODO: Implement proper JWT token generation/retrieval
-        backendFormData.append('token', sessionId || 'test-token');
+        backendFormData.append('cnic_front', cnicFront);
+        backendFormData.append('cnic_back', cnicBack);
+        backendFormData.append('session_id', sessionId);
 
-        const response = await fetch(`${BACKEND_URL}/api/verify/upload-cnic`, {
+        const response = await fetch(`${BACKEND_URL}/api/chat/submit-cnic`, {
             method: 'POST',
             body: backendFormData
         });
 
         if (!response.ok) {
-            throw new Error('Backend CNIC upload failed');
+            const errorText = await response.text();
+            console.error('Backend CNIC upload failed:', errorText);
+            throw new Error(`Backend CNIC upload failed: ${response.status}`);
         }
 
         const data = await response.json();
@@ -31,14 +31,16 @@ export async function POST(request) {
         return NextResponse.json({
             success: true,
             message: 'CNIC uploaded successfully',
-            data
+            confirmation_message: data.confirmation_message || null,
+            data: data.data
         });
 
     } catch (error) {
         console.error('CNIC Upload Error:', error);
         return NextResponse.json({
             success: false,
-            message: 'Failed to upload CNIC'
+            message: 'Failed to upload CNIC',
+            error: error.message
         }, { status: 500 });
     }
 }

@@ -145,30 +145,49 @@ export default function ChatWindow() {
         setActiveOverlay(null);
 
         // Send CNIC data to backend
+        let confirmationMessage = "✓ CNIC uploaded successfully! Next, let's verify your face with a liveness check.";
+
         try {
             const formData = new FormData();
-            // data.front and data.back are now File objects, not base64 strings
             formData.append('cnic_front', data.front);
             formData.append('cnic_back', data.back);
             formData.append('session_id', sessionId);
 
-            await fetch('/api/chat/submit-cnic', {
+            const response = await fetch('/api/chat/submit-cnic', {
                 method: 'POST',
                 body: formData
             });
+
+            if (response.ok) {
+                const result = await response.json();
+                // Use the confirmation message from backend if available
+                if (result.confirmation_message) {
+                    confirmationMessage = result.confirmation_message;
+                }
+            }
         } catch (error) {
             console.error('CNIC upload error:', error);
         }
 
-        const botMsg = {
+        // First message: CNIC details confirmation
+        const confirmationMsg = {
             id: Date.now().toString(),
             role: "bot",
-            content: "✓ CNIC uploaded successfully! Next, let's verify your face with a liveness check.",
+            content: confirmationMessage,
             timestamp: Date.now(),
         };
+        
+        // Second message: Next step prompt (separate message)
+        const nextStepMsg = {
+            id: (Date.now() + 1).toString(),
+            role: "bot",
+            content: "Next, let's verify your face with a liveness check.",
+            timestamp: Date.now() + 1,
+        };
+        
         setChatState(prev => ({
             ...prev,
-            messages: [...prev.messages, botMsg]
+            messages: [...prev.messages, confirmationMsg, nextStepMsg]
         }));
 
         // Move to face verification

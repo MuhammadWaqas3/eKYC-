@@ -118,9 +118,9 @@ async def root():
 
 
 # Include routers
-app.include_router(chat_routes.router, prefix="/api/chat", tags=["Chat"])
-app.include_router(verification_routes.router, prefix="/api/verify", tags=["Verification"])
-app.include_router(admin_routes.router, prefix="/api/admin", tags=["Admin"])
+app.include_router(chat_routes.router)
+app.include_router(verification_routes.router)
+app.include_router(admin_routes.router)
 
 
 if __name__ == "__main__":

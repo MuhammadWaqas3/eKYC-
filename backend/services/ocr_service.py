@@ -10,6 +10,7 @@ import os
 from typing import Dict, Optional, List, Tuple
 from PIL import Image
 
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 class TesseractOCRService:
     """Service for extracting data from Pakistani CNIC using Tesseract OCR."""
@@ -52,31 +53,29 @@ class TesseractOCRService:
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             
             # Resize if image is too small (improves OCR accuracy)
+            # Target width 1500-2000 is usually good for CNIC
             height, width = gray.shape
-            if width < 1000:
-                scale_factor = 1000 / width
+            target_width = 1600
+            
+            if width < target_width:
+                scale_factor = target_width / width
                 new_width = int(width * scale_factor)
                 new_height = int(height * scale_factor)
                 gray = cv2.resize(gray, (new_width, new_height), interpolation=cv2.INTER_CUBIC)
             
-            # Apply denoising
-            denoised = cv2.fastNlMeansDenoising(gray, None, h=10, templateWindowSize=7, searchWindowSize=21)
+            # Increase contrast using CLAHE (Contrast Limited Adaptive Histogram Equalization)
+            # This is often better for Tesseract LSTM than simple thresholding across the whole image
+            clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+            enhanced = clahe.apply(gray)
             
-            # Apply adaptive thresholding for better text extraction
-            binary = cv2.adaptiveThreshold(
-                denoised,
-                255,
-                cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                cv2.THRESH_BINARY,
-                11,
-                2
-            )
+            # Optional: Slight denoising if needed, but Tesseract 4+ is distinctively robust to noise
+            # denoised = cv2.fastNlMeansDenoising(enhanced, None, 10, 7, 21)
             
-            # Apply morphological operations to clean up
-            kernel = np.ones((1, 1), np.uint8)
-            processed = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
+            # For Tesseract 4/5 (LSTM), raw grayscale/enhanced often works better than binary
+            # BUT if using legacy engine or specific noisy backgrounds, binarization helps.
+            # Let's stick to enhanced grayscale which preserves more information.
             
-            return processed
+            return enhanced
             
         except Exception as e:
             print(f"Error preprocessing image: {e}")

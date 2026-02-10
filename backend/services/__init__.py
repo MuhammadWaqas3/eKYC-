@@ -1,1 +1,1 @@
-"""Services package initialization."""
+# Fixed encoding to UTF-8

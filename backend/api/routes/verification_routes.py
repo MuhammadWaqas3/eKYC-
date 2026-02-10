@@ -1,7 +1,7 @@
 """
 Verification API routes for document upload and biometric verification.
 """
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
@@ -131,7 +131,7 @@ async def validate_token(
 
 @router.post("/upload-cnic", response_model=CNICUploadResponse)
 async def upload_cnic(
-    token: str,
+    token: str = Form(...),
     front_image: UploadFile = File(...),
     back_image: UploadFile = File(...),
     db: Session = Depends(get_db)
