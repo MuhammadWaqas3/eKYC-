@@ -19,7 +19,7 @@ export async function POST(request) {
                 user_id: userData?.id || null,
                 session_id: session_id || null
             }),
-        });
+        }); 
 
         if (!backendResponse.ok) {
             throw new Error(`Backend Error: ${backendResponse.statusText}`);

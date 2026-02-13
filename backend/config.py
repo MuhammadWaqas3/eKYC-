@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     AUDIT_LOG_PATH: str = "./logs/audit.log"
 
     # LLM Settings
-    GROQ_API_KEY: str = "gsk_JprHujwk7bq0rSKY0jvbWGdyb3FY7Ddzo8nqdLpTrQwiqq8ehr77Y"
+    GROQ_API_KEY: str = "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"
     GROQ_API_URL: str = "https://api.groq.com/openai/v1/chat/completions"
     GROQ_MODEL: str = "llama-3.3-70b-versatile"
     
