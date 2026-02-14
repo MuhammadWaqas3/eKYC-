@@ -13,7 +13,6 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 try:
     from database.models import User, ChatMessage, VerificationSession, CNICData, BiometricData, Account
     from database.database import Base
-    from security.encryption import encryption_service
     from config import settings
 except ImportError as e:
     print(f"Error importing modules: {e}")
@@ -108,18 +107,18 @@ def view_details(session_id=None):
         
         cnic = db.query(CNICData).filter(CNICData.user_id == s.user_id).first()
         if cnic:
-            print(f"  CNIC Front: {encryption_service.decrypt(cnic.encrypted_front_image_path)}")
-            print(f"  CNIC Back:  {encryption_service.decrypt(cnic.encrypted_back_image_path)}")
+            print(f"  CNIC Front: {cnic.encrypted_front_image_path}")
+            print(f"  CNIC Back:  {cnic.encrypted_back_image_path}")
         else:
             print("  CNIC: Not uploaded")
             
         bio = db.query(BiometricData).filter(BiometricData.user_id == s.user_id).first()
         if bio:
-            print(f"  Selfie:     {encryption_service.decrypt(bio.encrypted_selfie_path)}")
+            print(f"  Selfie:     {bio.encrypted_selfie_path}")
             if bio.encrypted_liveness_video_path:
-                print(f"  Video:      {encryption_service.decrypt(bio.encrypted_liveness_video_path)}")
+                print(f"  Video:      {bio.encrypted_liveness_video_path}")
             if bio.encrypted_fingerprint_data:
-                print(f"  Fingerprint:{encryption_service.decrypt(bio.encrypted_fingerprint_data)}")
+                print(f"  Fingerprint:{bio.encrypted_fingerprint_data}")
         else:
              print("  Biometrics: Not uploaded")
              

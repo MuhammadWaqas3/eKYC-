@@ -19,10 +19,6 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     
-    # Encryption
-    ENCRYPTION_KEY: str = "your-encryption-key-32-bytes-long-change-this"
-    SALT: str = "your-salt-16-bytes-long"
-    
     # Application
     APP_NAME: str = "Avanza Solutions eKYC"
     API_HOST: str = "0.0.0.0"

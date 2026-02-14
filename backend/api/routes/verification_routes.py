@@ -11,7 +11,7 @@ import shutil
 import uuid
 
 from database import get_db, User, VerificationSession, CNICData, BiometricData, Account, VerificationStatus
-from security import jwt_handler, encryption_service, audit_logger
+from security import jwt_handler, audit_logger
 from services.cv import face_match_service, liveness_service
 from services.ocr_service import tesseract_ocr_service
 from services.validation import cnic_validator
@@ -183,9 +183,7 @@ async def upload_cnic(
         
         for field in sensitive_fields:
             if field in extracted_data and extracted_data[field]:
-                encrypted_data[f'encrypted_{field}'] = encryption_service.encrypt(
-                    extracted_data[field]
-                )
+                encrypted_data[f'encrypted_{field}'] = extracted_data[field]
         
         # Extract face from CNIC for later matching
         face_path = os.path.join(UPLOAD_DIR, f"{session_id}_cnic_face.jpg")
@@ -218,8 +216,8 @@ async def upload_cnic(
                 **encrypted_data,
                 is_valid=is_valid,
                 validation_errors=str(validation_errors) if validation_errors else None,
-                encrypted_front_image_path=encryption_service.encrypt(front_path),
-                encrypted_back_image_path=encryption_service.encrypt(back_path)
+                encrypted_front_image_path=front_path,
+                encrypted_back_image_path=back_path
             )
             db.add(cnic_record)
         
@@ -304,13 +302,13 @@ async def upload_selfie(
         ).first()
         
         if biometric_record:
-            biometric_record.encrypted_selfie_path = encryption_service.encrypt(selfie_path)
+            biometric_record.encrypted_selfie_path = selfie_path
             biometric_record.face_match_score = match_score
             biometric_record.face_match_result = is_match
         else:
             biometric_record = BiometricData(
                 user_id=user_id,
-                encrypted_selfie_path=encryption_service.encrypt(selfie_path),
+                encrypted_selfie_path=selfie_path,
                 face_match_score=match_score,
                 face_match_result=is_match
             )
@@ -381,7 +379,7 @@ async def liveness_check(
         ).first()
         
         if biometric_record:
-            biometric_record.encrypted_liveness_video_path = encryption_service.encrypt(video_path)
+            biometric_record.encrypted_liveness_video_path = video_path
             biometric_record.liveness_score = liveness_score
             biometric_record.liveness_result = is_live
         

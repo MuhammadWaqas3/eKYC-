@@ -439,8 +439,6 @@ import logging
 from pathlib import Path
 
 # Service imports
-import services.encryption_service
-encryption_service = services.encryption_service.encryption_service
 from services.ocr_service import tesseract_ocr_service
 
 
