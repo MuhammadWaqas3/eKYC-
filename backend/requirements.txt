@@ -22,35 +22,15 @@
 # Core FastAPI
 fastapi==0.109.0
 uvicorn[standard]==0.27.0
-
-# Database
 sqlalchemy==2.0.25
 psycopg2-binary==2.9.9
-
-# Settings & Config
 pydantic-settings==2.1.0
+pydantic==2.5.3
 python-dotenv==1.0.0
-
-# Authentication & Security
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 cryptography==42.0.0
-
-# Computer Vision (Optional - can comment out if not using)
-opencv-python==4.9.0.80
-deepface==0.0.79
-easyocr==1.7.0
-Pillow<10.0.0
-
-# HTTP Client
 httpx==0.26.0
-
-# File Upload
 python-multipart>=0.0.9
-
-# OCR (Optional)
-pytesseract==0.3.10
-
-# Utilities
-pydantic==2.5.3
 requests==2.31.0
+email-validator>=2.1.0
