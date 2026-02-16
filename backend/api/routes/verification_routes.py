@@ -12,8 +12,9 @@ import uuid
 
 from database import get_db, User, VerificationSession, CNICData, BiometricData, Account, VerificationStatus
 from security import jwt_handler, audit_logger
-from services.cv import face_match_service, liveness_service
+from services.cv import face_match_service, didit_liveness_service
 from services.ocr_service import tesseract_ocr_service
+from services.ocrspace_service import ocrspace_service
 from services.validation import cnic_validator
 from config import settings
 
@@ -162,8 +163,20 @@ async def upload_cnic(
         # Log upload
         audit_logger.log_cnic_uploaded(user_id, session_id)
         
-        # Extract CNIC data using OCR
-        extracted_data = tesseract_ocr_service.extract_cnic_data(front_path, back_path)
+        # Extract CNIC data using DUAL OCR approach (OCR.space + Tesseract)
+        print("Extracting CNIC data using dual OCR approach...")
+        
+        # Try OCR.space API first
+        ocrspace_data = ocrspace_service.extract_cnic_data(front_path, back_path)
+        print(f"OCR.space extracted: {ocrspace_data}")
+        
+        # Always run Tesseract as well
+        tesseract_data = tesseract_ocr_service.extract_cnic_data(front_path, back_path)
+        print(f"Tesseract extracted: {tesseract_data}")
+        
+        # Merge results for best accuracy
+        extracted_data = ocrspace_service.merge_ocr_results(tesseract_data, ocrspace_data)
+        print(f"Merged OCR data: {extracted_data}")
         
         # Validate extracted data
         is_valid, validation_errors = cnic_validator.validate_cnic_data(extracted_data)
@@ -362,13 +375,16 @@ async def liveness_check(
         session_id = payload.get("session_id")
         
         # Save video
-        video_path = os.path.join(UPLOAD_DIR, f"{session_id}_liveness.mp4")
+        video_path = os.path.join(UPLOAD_DIR, f"{session_id}_liveness.webm")
         
         with open(video_path, "wb") as buffer:
             shutil.copyfileobj(liveness_video.file, buffer)
         
-        # Perform liveness check
-        is_live, liveness_score, details = liveness_service.check_liveness(video_path)
+        # Perform liveness check using DIDIT API (with MediaPipe fallback)
+        print(f"Performing liveness check with DIDIT API: {video_path}")
+        is_live, liveness_score, details = didit_liveness_service.check_liveness(video_path)
+        
+        print(f"Liveness result: is_live={is_live}, score={liveness_score}, details={details}")
         
         # Log liveness check
         audit_logger.log_liveness_check(user_id, session_id, liveness_score, is_live)

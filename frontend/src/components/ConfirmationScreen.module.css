@@ -1,0 +1,273 @@
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(12px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease-out;
+    padding: 1rem;
+}
+
+.container {
+    background: var(--background);
+    border-radius: 24px;
+    border: 2px solid var(--primary);
+    box-shadow: 0 25px 50px -12px rgba(236, 72, 153, 0.5);
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUp 0.4s ease-out;
+}
+
+.header {
+    text-align: center;
+    padding: 2.5rem 2rem 1.5rem;
+    border-bottom: 1px solid var(--card-border);
+}
+
+.iconWrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(236, 72, 153, 0.2));
+    border-radius: 50%;
+    margin-bottom: 1.5rem;
+    animation: pulse 2s infinite;
+}
+
+.checkIcon {
+    color: var(--primary);
+}
+
+.title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--foreground);
+    margin-bottom: 0.75rem;
+}
+
+.subtitle {
+    color: var(--muted-foreground);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.dataGrid {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.dataItem {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    transition: all 0.2s;
+}
+
+.dataItem:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(236, 72, 153, 0.3);
+}
+
+.fieldLabel {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--muted-foreground);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.fieldIcon {
+    font-size: 1.1rem;
+}
+
+.fieldValue {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--foreground);
+    word-break: break-word;
+}
+
+.fieldValue.empty {
+    color: var(--muted-foreground);
+    font-weight: 400;
+}
+
+.notAvailable {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(255, 152, 0, 0.8);
+    font-size: 0.9rem;
+}
+
+.confirmationText {
+    padding: 1.25rem 2rem;
+    background: rgba(236, 72, 153, 0.05);
+    border-top: 1px solid var(--card-border);
+    border-bottom: 1px solid var(--card-border);
+}
+
+.confirmationText p {
+    color: var(--muted-foreground);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.actions {
+    display: flex;
+    gap: 1rem;
+    padding: 2rem;
+}
+
+.editBtn,
+.confirmBtn {
+    flex: 1;
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.editBtn {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--foreground);
+    border: 1px solid var(--card-border);
+}
+
+.editBtn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.confirmBtn {
+    background: var(--primary);
+    color: white;
+}
+
+.confirmBtn:hover:not(:disabled) {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(236, 72, 153, 0.5);
+}
+
+.editBtn:disabled,
+.confirmBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.loader {
+    width: 18px;
+    height: 18px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .container {
+        border-radius: 20px;
+        max-height: 95vh;
+    }
+
+    .header {
+        padding: 2rem 1.5rem 1.25rem;
+    }
+
+    .title {
+        font-size: 1.5rem;
+    }
+
+    .subtitle {
+        font-size: 0.9rem;
+    }
+
+    .dataGrid {
+        padding: 1.5rem;
+        gap: 1rem;
+    }
+
+    .dataItem {
+        padding: 0.875rem 1rem;
+    }
+
+    .actions {
+        flex-direction: column;
+        padding: 1.5rem;
+    }
+
+    .editBtn,
+    .confirmBtn {
+        width: 100%;
+        padding: 1.125rem;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 0 0 20px rgba(236, 72, 153, 0);
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

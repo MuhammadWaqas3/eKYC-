@@ -1,14 +1,12 @@
-version: '3.8'
-
 services:
   # PostgreSQL Database
   postgres:
-    image: postgres:14-alpine
+    image: postgres:16-alpine
     container_name: ekyc_postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: ekyc_db
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-ekyc_db}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -16,10 +14,19 @@ services:
     networks:
       - ekyc_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          memory: 256M
 
   # FastAPI Backend
   backend:
@@ -27,72 +34,122 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: ekyc_backend
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-ekyc_db}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      API_HOST: 0.0.0.0
+      API_PORT: 8000
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-this-in-production}
     volumes:
       - ./backend:/app
       - ./uploads:/app/uploads
+      - ./logs:/app/logs
     ports:
       - "8000:8000"
-    environment:
-      - DATABASE_URL=postgresql://postgres:password@postgres:5432/ekyc_db
-      - FRONTEND_URL=http://localhost:3000
-      - RASA_API_URL=http://rasa:5005
     depends_on:
       postgres:
         condition: service_healthy
     networks:
       - ekyc_network
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          memory: 1G
+    # Development mode with hot-reload
+    profiles:
+      - dev
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
-  # Rasa Server
-  rasa:
+  # FastAPI Backend (Production)
+  backend-prod:
     build:
-      context: ./rasa
+      context: ./backend
       dockerfile: Dockerfile
-    container_name: ekyc_rasa
-    command: rasa run --enable-api --cors "*"
-    volumes:
-      - ./rasa:/app
-    ports:
-      - "5005:5005"
-    networks:
-      - ekyc_network
-    restart: unless-stopped
-
-  # Rasa Actions Server
-  rasa_actions:
-    build:
-      context: ./rasa
-      dockerfile: Dockerfile.actions
-    container_name: ekyc_rasa_actions
-    command: rasa run actions
-    volumes:
-      - ./rasa:/app
-    ports:
-      - "5055:5055"
+    container_name: ekyc_backend_prod
     environment:
-      - BACKEND_URL=http://backend:8000/api
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-ekyc_db}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      API_HOST: 0.0.0.0
+      API_PORT: 8000
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-this-in-production}
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - ekyc_network
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          memory: 1G
+    profiles:
+      - prod
 
-  # Next.js Frontend
+  # Next.js Frontend (Development)
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      target: builder
     container_name: ekyc_frontend
-    command: npm run dev
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000/api}
     volumes:
       - ./frontend:/app
+      - /app/.next
       - /app/node_modules
     ports:
       - "3000:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000/api
     networks:
       - ekyc_network
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          memory: 512M
+    profiles:
+      - dev
+    command: npm run dev
+
+  # Next.js Frontend (Production)
+  frontend-prod:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ekyc_frontend_prod
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000/api}
+    ports:
+      - "3000:3000"
+    networks:
+      - ekyc_network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          memory: 512M
+    profiles:
+      - prod
 
 networks:
   ekyc_network:
@@ -100,3 +157,4 @@ networks:
 
 volumes:
   postgres_data:
+    driver: local

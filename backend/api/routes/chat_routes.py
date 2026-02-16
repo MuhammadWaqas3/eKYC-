@@ -800,54 +800,10 @@ async def submit_cnic(
         
         db.commit()
         logger.info("CNIC data saved successfully!")
-
-        # Fetch User and Account details for the response
-        user = db.query(User).filter(User.id == user_id).first()
-        account = db.query(Account).filter(Account.user_id == user_id).first()
-        
-        user_email = user.email if user else "Unknown"
-        user_phone = user.phone if user else "Unknown"
-        acc_type = account.account_type.title() if account else "Pending"
-        
-        # Extract DOB from OCR data
-        dob_val = get_val(cnic_extracted.get('dob'))
-
-        # Create a detailed bot message
-        details_msg = (
-            "✅ **CNIC Uploaded Successfully!**\n\n"
-            "Here are your details:\n\n"
-            f"👤 **Name:** {name_val}\n"
-            f"🆔 **CNIC Number:** {cnic_num}\n"
-            f"👨‍👦 **Father's Name:** {father_val}\n"
-            f"📅 **Date of Birth:** {dob_val}\n"
-            f"📧 **Email:** {user_email}\n"
-            f"📱 **Phone:** {user_phone}\n"
-            f"🏦 **Account Type:** {acc_type}\n\n"
-            "Please confirm if these details are correct."
-        )
-
-        # Save this message to chat history so it appears in the chat
-        db.add(ChatMessage(
-            user_id=user_id, 
-            session_id=session_id, 
-            sender="bot", 
-            message=details_msg
-        ))
-        db.commit()
         
         return {
             "status": "success",
-            "message": "CNIC uploaded and processed",
-            "confirmation_message": details_msg,
-            "data": {
-                "cnic_number": cnic_num,
-                "name": name_val,
-                "father_name": father_val,
-                "dob": dob_val,
-                "email": user_email,
-                "phone": user_phone,
-                "account_type": acc_type
-            }
+            "message": "CNIC uploaded and being processed"
         }
         
     except HTTPException as he:
@@ -934,15 +890,12 @@ async def submit_face(
 
 @router.post("/submit-fingerprint")
 async def submit_fingerprint(
-    request: Request,
+    session_id: str = Form(...),
+    fingerprint_image: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
-    """Submit fingerprint data."""
+    """Submit fingerprint image captured via camera."""
     try:
-        data = await request.json()
-        session_id = data.get('session_id')
-        fingerprint_blob = data.get('fingerprint_data')
-        
         logger.info(f"Fingerprint submission for session: {session_id}")
         
         # Find user
@@ -956,10 +909,9 @@ async def submit_fingerprint(
         
         user_id = last_msg.user_id
         
-        # Save fingerprint data
-        fp_path = os.path.join(UPLOAD_DIR, f"{session_id}_fingerprint.txt")
-        with open(fp_path, "w") as f:
-            f.write(str(fingerprint_blob))
+        # Save fingerprint image
+        fp_path = save_upload_file(fingerprint_image, f"{session_id}_fingerprint.jpg")
+        logger.info(f"Fingerprint image saved: {fp_path}")
         
         # Update biometric data
         bio_data = db.query(BiometricData).filter(BiometricData.user_id == user_id).first()
@@ -968,12 +920,12 @@ async def submit_fingerprint(
             bio_data = BiometricData(
                 user_id=user_id, 
                 fingerprint_verified=True,
-                encrypted_fingerprint_data=fp_path # Plain text
+                encrypted_fingerprint_data=fp_path  # Plain text path
             )
             db.add(bio_data)
         else:
             bio_data.fingerprint_verified = True
-            bio_data.encrypted_fingerprint_data = fp_path # Plain text
+            bio_data.encrypted_fingerprint_data = fp_path  # Plain text path
         
         db.commit()
         logger.info("Fingerprint saved successfully")
@@ -984,6 +936,7 @@ async def submit_fingerprint(
         logger.error(f"Fingerprint error: {e}")
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
 
 
 # --- Status Check Endpoint ---
@@ -1005,3 +958,61 @@ async def check_status(session_id: str, db: Session = Depends(get_db)):
             "face": session.face_match_completed
         }
     }
+
+
+# --- Get Collected Data Endpoint (for final confirmation) ---
+
+@router.get("/get-collected-data")
+async def get_collected_data(session_id: str, db: Session = Depends(get_db)):
+    """
+    Fetch all collected user data after fingerprint capture.
+    Returns name, father name, DOB, CNIC, email, phone, account type.
+    """
+    try:
+        logger.info(f"Fetching collected data for session: {session_id}")
+        
+        # Find user by session_id
+        last_msg = db.query(ChatMessage).filter(
+            ChatMessage.session_id == session_id,
+            ChatMessage.user_id != None
+        ).order_by(ChatMessage.timestamp.desc()).first()
+        
+        if not last_msg:
+            raise HTTPException(status_code=400, detail="User session not found")
+        
+        user_id = last_msg.user_id
+        
+        # Fetch user data
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Fetch CNIC data
+        cnic_data = db.query(CNICData).filter(CNICData.user_id == user_id).first()
+        
+        # Fetch account data
+        account = db.query(Account).filter(Account.user_id == user_id).first()
+        
+        # Helper function
+        def safe_val(val):
+            return val if val and val != "Not Detected" else "Not Available"
+        
+        # Compile response
+        response_data = {
+            "name": safe_val(cnic_data.encrypted_name if cnic_data else user.name),
+            "father_name": safe_val(cnic_data.encrypted_father_name if cnic_data else None),
+            "dob": safe_val(cnic_data.encrypted_dob if cnic_data and hasattr(cnic_data, 'encrypted_dob') else None),
+            "cnic_number": safe_val(cnic_data.encrypted_cnic_number if cnic_data else None),
+            "email": user.email,
+            "phone": user.phone,
+            "account_type": account.account_type.title() if account else "Pending"
+        }
+        
+        logger.info(f"Collected data: {response_data}")
+        return response_data
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching collected data: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

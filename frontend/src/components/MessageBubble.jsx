@@ -5,19 +5,24 @@ import styles from "./MessageBubble.module.css";
 export default function MessageBubble({ message }) {
     const isBot = message.role === "bot";
     const [tickStatus, setTickStatus] = useState('sent'); // sent, delivered, read
+    const [time, setTime] = useState(''); // <-- client-side timestamp
 
+    // Client-side tick simulation
     useEffect(() => {
         if (!isBot) {
-            // Simulate tick progression
             const timer1 = setTimeout(() => setTickStatus('delivered'), 1000);
             const timer2 = setTimeout(() => setTickStatus('read'), 2500);
-
             return () => {
                 clearTimeout(timer1);
                 clearTimeout(timer2);
             };
         }
     }, [isBot]);
+
+    // Render timestamp **only on client**
+    useEffect(() => {
+        setTime(new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    }, [message.timestamp]);
 
     return (
         <div className={`${styles.container} ${isBot ? styles.bot : styles.user}`}>
@@ -41,9 +46,7 @@ export default function MessageBubble({ message }) {
                     <p className={styles.text}>{message.content}</p>
                 )}
                 <div className={styles.meta}>
-                    <span className={styles.time}>
-                        {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </span>
+                    <span className={styles.time}>{time}</span> {/* use client-side time */}
                     {!isBot && (
                         <span className={`${styles.ticks} ${tickStatus === 'read' ? styles.read : ''}`}>
                             {tickStatus === 'sent' && <Check size={14} />}

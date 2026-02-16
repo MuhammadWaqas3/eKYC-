@@ -1,11 +1,13 @@
 "use client";
+import { v4 as uuidv4 } from "uuid";
 import { useState, useRef, useEffect } from "react";
 import { Send, Sparkles, Upload } from "lucide-react";
 import styles from "./ChatWindow.module.css";
 import MessageBubble from "./MessageBubble";
 import CameraOverlay from "./CameraOverlay";
-import CNICUploadOverlay from "./CNICUploadOverlay";
+import CNICCameraOverlay from "./CNICCameraOverlay";
 import FingerprintOverlay from "./FingerprintOverlay";
+import ConfirmationScreen from "./ConfirmationScreen";
 
 export default function ChatWindow() {
     const [input, setInput] = useState("");
@@ -23,10 +25,12 @@ export default function ChatWindow() {
         livenessVideo: null,
         fingerprint: null
     });
+    const [collectedUserData, setCollectedUserData] = useState(null);
+    const [showConfirmation, setShowConfirmation] = useState(false);
 
     // Initialize session
     useEffect(() => {
-        const storedId = localStorage.getItem("chatSessionId") || crypto.randomUUID();
+        const storedId = localStorage.getItem("chatSessionId") || uuidv4();
         localStorage.setItem("chatSessionId", storedId);
         setSessionId(storedId);
     }, []);
@@ -69,10 +73,14 @@ export default function ChatWindow() {
             messages: [...prev.messages, userMsg],
             isLoading: true,
         }));
+
+        const userInput = input.toLowerCase().trim();
         setInput("");
         setIsTyping(true);
 
-        // Communicate with API
+        // Not needed anymore - confirmation handled by ConfirmationScreen component
+
+        // Normal chat flow with API
         try {
             const response = await fetch("/api/chat", {
                 method: "POST",
@@ -144,50 +152,32 @@ export default function ChatWindow() {
         setCapturedData(prev => ({ ...prev, cnicFront: data.front, cnicBack: data.back }));
         setActiveOverlay(null);
 
-        // Send CNIC data to backend
-        let confirmationMessage = "✓ CNIC uploaded successfully! Next, let's verify your face with a liveness check.";
-
+        // Send CNIC data to backend (OCR processes in background)
         try {
             const formData = new FormData();
             formData.append('cnic_front', data.front);
             formData.append('cnic_back', data.back);
             formData.append('session_id', sessionId);
 
-            const response = await fetch('/api/chat/submit-cnic', {
+            await fetch('/api/chat/submit-cnic', {
                 method: 'POST',
                 body: formData
             });
-
-            if (response.ok) {
-                const result = await response.json();
-                // Use the confirmation message from backend if available
-                if (result.confirmation_message) {
-                    confirmationMessage = result.confirmation_message;
-                }
-            }
         } catch (error) {
             console.error('CNIC upload error:', error);
         }
 
-        // First message: CNIC details confirmation
+        // Simple success message - NO detailed data yet
         const confirmationMsg = {
             id: Date.now().toString(),
             role: "bot",
-            content: confirmationMessage,
+            content: "✅ CNIC captured successfully! Processing your information in the background.\n\nNext, let's verify your face with a liveness check.",
             timestamp: Date.now(),
         };
-        
-        // Second message: Next step prompt (separate message)
-        const nextStepMsg = {
-            id: (Date.now() + 1).toString(),
-            role: "bot",
-            content: "Next, let's verify your face with a liveness check.",
-            timestamp: Date.now() + 1,
-        };
-        
+
         setChatState(prev => ({
             ...prev,
-            messages: [...prev.messages, confirmationMsg, nextStepMsg]
+            messages: [...prev.messages, confirmationMsg]
         }));
 
         // Move to face verification
@@ -239,32 +229,96 @@ export default function ChatWindow() {
 
     // Handle Fingerprint capture
     const handleFingerprintCapture = async (data) => {
+        console.log('[DEBUG] Fingerprint captured:', data);
         setCapturedData(prev => ({ ...prev, fingerprint: data }));
         setActiveOverlay(null);
 
-        // Send fingerprint data to backend
+        // Send fingerprint data to backend (as File)
         try {
-            await fetch('/api/chat/submit-fingerprint', {
+            const formData = new FormData();
+            formData.append('fingerprint_image', data);
+            formData.append('session_id', sessionId);
+
+            console.log('[DEBUG] Uploading fingerprint to backend...');
+            const uploadResponse = await fetch('/api/chat/submit-fingerprint', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    fingerprint_data: data,
-                    session_id: sessionId
-                })
+                body: formData
             });
+            console.log('[DEBUG] Fingerprint upload response:', uploadResponse.status);
         } catch (error) {
-            console.error('Fingerprint upload error:', error);
+            console.error('[ERROR] Fingerprint upload error:', error);
         }
 
-        const botMsg = {
+        const processingMsg = {
             id: Date.now().toString(),
             role: "bot",
-            content: "🎉 Excellent! All verification steps are complete. Your account is being processed. You'll receive confirmation shortly.",
+            content: "✅ Fingerprint captured! Retrieving your information...",
             timestamp: Date.now(),
         };
         setChatState(prev => ({
             ...prev,
-            messages: [...prev.messages, botMsg]
+            messages: [...prev.messages, processingMsg]
+        }));
+
+        // Fetch all collected data from backend and show confirmation screen
+        console.log('[DEBUG] Fetching collected data...');
+        setTimeout(async () => {
+            try {
+                const response = await fetch(`/api/chat/get-collected-data?session_id=${sessionId}`);
+                console.log('[DEBUG] Get collected data response:', response.status);
+
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('[DEBUG] Collected data:', result);
+                    setCollectedUserData(result);
+                    setShowConfirmation(true);
+                    setVerificationStep('awaiting_confirmation');
+                    console.log('[DEBUG] Confirmation screen should now be visible');
+                } else {
+                    console.error('[ERROR] Failed to fetch collected data:', response.statusText);
+                    // Show error in chat
+                    const errorMsg = {
+                        id: Date.now().toString(),
+                        role: "bot",
+                        content: "⚠️ There was an issue retrieving your data. Please contact support.",
+                        timestamp: Date.now(),
+                    };
+                    setChatState(prev => ({
+                        ...prev,
+                        messages: [...prev.messages, errorMsg]
+                    }));
+                }
+            } catch (error) {
+                console.error('[ERROR] Error fetching collected data:', error);
+                // Show error in chat
+                const errorMsg = {
+                    id: Date.now().toString(),
+                    role: "bot",
+                    content: "⚠️ Network error. Please check your connection and try again.",
+                    timestamp: Date.now(),
+                };
+                setChatState(prev => ({
+                    ...prev,
+                    messages: [...prev.messages, errorMsg]
+                }));
+            }
+        }, 1500);
+    };
+
+    // Handle confirmation from ConfirmationScreen
+    const handleUserConfirmation = async () => {
+        setShowConfirmation(false);
+
+        const congratsMsg = {
+            id: Date.now().toString(),
+            role: "bot",
+            content: "🎉 **Congratulations!**\n\nYour account opening request has been successfully submitted!\n\nWelcome to Avanza Solutions! You will receive a confirmation email shortly with your account details.\n\nThank you for choosing us! 🙏",
+            timestamp: Date.now(),
+        };
+
+        setChatState(prev => ({
+            ...prev,
+            messages: [...prev.messages, congratsMsg]
         }));
 
         setVerificationStep('complete');
@@ -341,7 +395,7 @@ export default function ChatWindow() {
 
             {/* Upload/Camera Overlays */}
             {activeOverlay === 'cnic' && (
-                <CNICUploadOverlay
+                <CNICCameraOverlay
                     onCapture={handleCNICUpload}
                     onClose={() => setActiveOverlay(null)}
                 />
@@ -357,6 +411,15 @@ export default function ChatWindow() {
                 <FingerprintOverlay
                     onCapture={handleFingerprintCapture}
                     onClose={() => setActiveOverlay(null)}
+                />
+            )}
+
+            {/* Confirmation Screen */}
+            {showConfirmation && collectedUserData && (
+                <ConfirmationScreen
+                    userData={collectedUserData}
+                    onConfirm={handleUserConfirmation}
+                    onEdit={() => setShowConfirmation(false)}
                 />
             )}
         </div>

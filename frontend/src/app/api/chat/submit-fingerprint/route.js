@@ -2,23 +2,33 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request) {
     try {
-        const body = await request.json();
-        const { fingerprint_data, session_id } = body;
+        const formData = await request.formData();
+        const fingerprint_image = formData.get('fingerprint_image');
+        const session_id = formData.get('session_id');
+
+        if (!fingerprint_image || !session_id) {
+            return NextResponse.json({
+                success: false,
+                message: 'Missing fingerprint image or session ID'
+            }, { status: 400 });
+        }
 
         const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+        // Create FormData for backend
+        const backendFormData = new FormData();
+        backendFormData.append('fingerprint_image', fingerprint_image);
+        backendFormData.append('session_id', session_id);
 
         // Forward to backend /api/chat/submit-fingerprint endpoint
         const response = await fetch(`${BACKEND_URL}/api/chat/submit-fingerprint`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                fingerprint_data,
-                session_id
-            })
+            body: backendFormData
         });
 
         if (!response.ok) {
-            throw new Error('Backend fingerprint submission failed');
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.detail || 'Backend fingerprint submission failed');
         }
 
         const data = await response.json();
@@ -33,7 +43,7 @@ export async function POST(request) {
         console.error('Fingerprint Submission Error:', error);
         return NextResponse.json({
             success: false,
-            message: 'Failed to submit fingerprint'
+            message: error.message || 'Failed to submit fingerprint'
         }, { status: 500 });
     }
 }
