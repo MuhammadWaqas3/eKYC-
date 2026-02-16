@@ -61,6 +61,31 @@
     line-height: 1.5;
 }
 
+.errorBanner {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #856404;
+    animation: slideDown 0.3s ease-out;
+}
+
+.errorBanner svg {
+    flex-shrink: 0;
+    color: #ffc107;
+}
+
+.errorBanner p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    font-weight: 500;
+}
+
 .dataGrid {
     padding: 2rem;
     display: flex;
@@ -269,5 +294,17 @@
 @keyframes spin {
     to {
         transform: rotate(360deg);
+    }
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
     }
 }

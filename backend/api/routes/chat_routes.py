@@ -548,6 +548,29 @@ async def chat_with_llm(payload: ChatRequest, db: Session = Depends(get_db)):
     uid = payload.user_id
     sid = payload.session_id
 
+    # Detect reset commands
+    reset_keywords = ['new chat', 'start over', 'restart', 'begin again', 'fresh start', 'reset']
+    if any(keyword in user_msg.lower() for keyword in reset_keywords):
+        # Clear chat history for this session
+        if sid:
+            db.query(ChatMessage).filter(ChatMessage.session_id == sid).delete()
+            db.commit()
+            logger.info(f"Chat history cleared for session: {sid}")
+        
+        # Return fresh start message
+        welcome_msg = "Of course! Let's start fresh.\n\nHello! Welcome to Avanza Solutions. I'm your digital assistant, and I can help you open a new bank account in just a few minutes.\n\nTo get started, please tell me your full name."
+        
+        # Save the reset request and welcome message
+        db.add(ChatMessage(user_id=uid, session_id=sid, sender="user", message=user_msg))
+        db.add(ChatMessage(user_id=uid, session_id=sid, sender="bot", message=welcome_msg))
+        db.commit()
+        
+        return {
+            "success": True,
+            "reply": welcome_msg,
+            "action": "reset_session"
+        }
+
     # 1. Fetch History (Last 15 messages)
     history_entries = []
     if uid or sid:
@@ -997,6 +1020,15 @@ async def get_collected_data(session_id: str, db: Session = Depends(get_db)):
         def safe_val(val):
             return val if val and val != "Not Detected" else "Not Available"
         
+        # Check if OCR fields are missing/failed
+        ocr_fields_missing = False
+        if cnic_data:
+            father_name_missing = not cnic_data.encrypted_father_name or cnic_data.encrypted_father_name == "Not Detected"
+            cnic_number_missing = not cnic_data.encrypted_cnic_number or cnic_data.encrypted_cnic_number == "Not Detected"
+            ocr_fields_missing = father_name_missing or cnic_number_missing
+        else:
+            ocr_fields_missing = True
+        
         # Compile response
         response_data = {
             "name": safe_val(cnic_data.encrypted_name if cnic_data else user.name),
@@ -1005,7 +1037,9 @@ async def get_collected_data(session_id: str, db: Session = Depends(get_db)):
             "cnic_number": safe_val(cnic_data.encrypted_cnic_number if cnic_data else None),
             "email": user.email,
             "phone": user.phone,
-            "account_type": account.account_type.title() if account else "Pending"
+            "account_type": account.account_type.title() if account else "Pending",
+            "ocr_error": ocr_fields_missing,
+            "error_message": "The image quality was not sufficient to extract details. Please provide a clearer photo" if ocr_fields_missing else None
         }
         
         logger.info(f"Collected data: {response_data}")

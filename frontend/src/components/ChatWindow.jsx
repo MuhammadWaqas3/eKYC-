@@ -61,6 +61,13 @@ export default function ChatWindow() {
     const handleSend = async () => {
         if (!input.trim()) return;
 
+        // Check for reset commands
+        const resetKeywords = ['new chat', 'start over', 'restart', 'begin again', 'fresh start', 'reset'];
+        if (resetKeywords.some(keyword => input.toLowerCase().includes(keyword))) {
+            handleReset();
+            return;
+        }
+
         const userMsg = {
             id: Date.now().toString(),
             role: "user",
@@ -127,6 +134,48 @@ export default function ChatWindow() {
             e.preventDefault();
             handleSend();
         }
+    };
+
+    // Handle new chat / reset
+    const handleReset = () => {
+        const resetMsg = {
+            id: Date.now().toString(),
+            role: "user",
+            content: input,
+            timestamp: Date.now(),
+        };
+
+        setChatState({
+            messages: [
+                resetMsg,
+                {
+                    id: (Date.now() + 1).toString(),
+                    role: "bot",
+                    content: "Of course! Let's start fresh.\n\nHello! Welcome to Avanza Solutions. I'm your digital assistant, and I can help you open a new bank account in just a few minutes.\n\nTo get started, please tell me your full name.",
+                    timestamp: Date.now() + 1,
+                }
+            ],
+            step: "ask_name",
+            userData: {},
+            isLoading: false,
+        });
+
+        setInput("");
+        setVerificationStep('idle');
+        setCapturedData({
+            cnicFront: null,
+            cnicBack: null,
+            selfie: null,
+            livenessVideo: null,
+            fingerprint: null
+        });
+        setCollectedUserData(null);
+        setShowConfirmation(false);
+
+        // Generate new session ID
+        const newSessionId = uuidv4();
+        localStorage.setItem("chatSessionId", newSessionId);
+        setSessionId(newSessionId);
     };
 
     // Start verification process

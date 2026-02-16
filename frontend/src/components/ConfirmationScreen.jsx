@@ -37,6 +37,13 @@ export default function ConfirmationScreen({ userData, onConfirm, onEdit }) {
                     </p>
                 </div>
 
+                {userData.ocr_error && userData.error_message && (
+                    <div className={styles.errorBanner}>
+                        <AlertCircle size={20} />
+                        <p>{userData.error_message}</p>
+                    </div>
+                )}
+
                 <div className={styles.dataGrid}>
                     {fields.map(field => {
                         const value = userData[field.key];
