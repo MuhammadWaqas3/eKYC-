@@ -1,7 +1,7 @@
 "use client";
 import { v4 as uuidv4 } from "uuid";
 import { useState, useRef, useEffect } from "react";
-import { Send, Sparkles, Upload } from "lucide-react";
+import { Send, Sparkles, Upload, RefreshCw } from "lucide-react";
 import styles from "./ChatWindow.module.css";
 import MessageBubble from "./MessageBubble";
 import CameraOverlay from "./CameraOverlay";
@@ -393,8 +393,18 @@ export default function ChatWindow() {
                     <Sparkles size={24} className={styles.logoIcon} />
                     <span>Avanza Solutions</span>
                 </div>
-                <div className={styles.status}>
-                    <span className={styles.dot}></span> Online
+                <div className={styles.headerRight}>
+                    <button
+                        className={styles.newChatBtn}
+                        onClick={handleReset}
+                        title="Start a new conversation"
+                    >
+                        <RefreshCw size={18} />
+                        <span>New Chat</span>
+                    </button>
+                    <div className={styles.status}>
+                        <span className={styles.dot}></span> Online
+                    </div>
                 </div>
             </header>
 
