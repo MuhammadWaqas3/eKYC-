@@ -104,3 +104,9 @@ Thumbs.db
 *.key
 *.pem
 *.crt
+
+venv310/
+
+*.sqlite
+
+__pycache__/
