@@ -1,21 +1,37 @@
+
+
+# Core FastAPI
 fastapi==0.109.0
 uvicorn[standard]==0.27.0
+
+# Database
 sqlalchemy==2.0.25
 psycopg2-binary==2.9.9
+
+# Settings
 pydantic-settings==2.1.0
+pydantic==2.5.3
+python-dotenv==1.0.0
+
+# Authentication
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 cryptography==42.0.0
+
+# HTTP & File Upload
+httpx==0.26.0
+python-multipart>=0.0.9
+requests==2.31.0
+
+# Utilities
+email-validator>=2.1.0
+gunicorn==21.2.0
+
+# Computer Vision - Full Stack
 opencv-python==4.9.0.80
 deepface==0.0.79
 easyocr==1.7.0
-Pillow>=10.2.0
-python-multipart>=0.0.9
-python-dotenv==1.0.0
-tensorflow-cpu==2.15.0
-numpy==1.24.3
-requests==2.31.0
-pydantic==2.5.3
-httpx==0.26.0
+Pillow==9.5.0
 pytesseract==0.3.10
-email-validator>=2.1.0
+numpy==1.24.3
+CACHE_BUST=1S
