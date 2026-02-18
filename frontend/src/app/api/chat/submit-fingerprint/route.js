@@ -13,7 +13,7 @@ export async function POST(request) {
             }, { status: 400 });
         }
 
-        const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://process.env.NEXT_PUBLIC_API_URL';
 
         // Create FormData for backend
         const backendFormData = new FormData();

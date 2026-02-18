@@ -14,7 +14,7 @@ services:
     networks:
       - ekyc_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -107,7 +107,7 @@ services:
       target: builder
     container_name: ekyc_frontend
     environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000/api}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://process.env.NEXT_PUBLIC_API_URL/api}
     volumes:
       - ./frontend:/app
       - /app/.next
@@ -135,7 +135,7 @@ services:
       dockerfile: Dockerfile
     container_name: ekyc_frontend_prod
     environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000/api}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://process.env.NEXT_PUBLIC_API_URL/api}
     ports:
       - "3000:3000"
     networks:

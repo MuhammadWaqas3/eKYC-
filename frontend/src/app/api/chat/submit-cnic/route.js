@@ -7,7 +7,7 @@ export async function POST(request) {
         const cnicBack = formData.get('cnic_back');
         const sessionId = formData.get('session_id');
 
-        const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://process.env.NEXT_PUBLIC_API_URL';
 
         // Forward to backend /api/chat/submit-cnic endpoint
         const backendFormData = new FormData();

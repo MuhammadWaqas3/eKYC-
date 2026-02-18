@@ -23,7 +23,7 @@ data = {
 }
 
 response = requests.post(
-    'http://localhost:8000/api/chat/submit-cnic',
+    'http://process.env.NEXT_PUBLIC_API_URL/api/chat/submit-cnic',
     files=files,
     data=data
 )

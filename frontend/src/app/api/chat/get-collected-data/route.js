@@ -12,7 +12,7 @@ export async function GET(request) {
             }, { status: 400 });
         }
 
-        const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://process.env.NEXT_PUBLIC_API_URL';
 
         // Forward GET request to backend
         const response = await fetch(`${BACKEND_URL}/api/chat/get-collected-data?session_id=${session_id}`, {

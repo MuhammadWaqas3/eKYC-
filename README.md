@@ -111,7 +111,7 @@ rasa train
 ```bash
 cd backend
 python main.py
-# API runs on http://localhost:8000
+# API runs on http://process.env.NEXT_PUBLIC_API_URL
 ```
 
 **Terminal 2 - Rasa Server:**
@@ -227,7 +227,7 @@ rasa shell
 ```
 
 ### API Documentation
-Visit `http://localhost:8000/docs` for interactive Swagger API documentation.
+Visit `http://process.env.NEXT_PUBLIC_API_URL/docs` for interactive Swagger API documentation.
 
 ## 🎨 Frontend Development
 

@@ -65,9 +65,9 @@ python main.py
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Backend will be available at: `http://localhost:8000`
+Backend will be available at: `http://process.env.NEXT_PUBLIC_API_URL`
 
-API Documentation: `http://localhost:8000/docs`
+API Documentation: `http://process.env.NEXT_PUBLIC_API_URL/docs`
 
 ### 3. Frontend Setup
 
@@ -79,7 +79,7 @@ cd ../frontend
 npm install
 
 # Create environment file
-echo "NEXT_PUBLIC_API_URL=http://localhost:8000" > .env.local
+echo "NEXT_PUBLIC_API_URL=http://process.env.NEXT_PUBLIC_API_URL" > .env.local
 
 # Start development server
 npm run dev
@@ -92,7 +92,7 @@ Frontend will be available at: `http://localhost:3000`
 ### 1. Test Backend Health
 
 ```bash
-curl http://localhost:8000/health
+curl http://process.env.NEXT_PUBLIC_API_URL/health
 ```
 
 Expected response:
@@ -121,7 +121,7 @@ To test the complete flow, you need to:
 1. **Generate a verification token** (via Rasa chat or directly via API):
 
 ```bash
-curl -X POST http://localhost:8000/api/chat/register \
+curl -X POST http://process.env.NEXT_PUBLIC_API_URL/api/chat/register \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Muhammad Ahmed Khan",
@@ -255,7 +255,7 @@ LIVENESS_THRESHOLD=0.7
 ### Frontend (.env.local)
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_API_URL=http://process.env.NEXT_PUBLIC_API_URL
 ```
 
 ## Common Issues & Solutions
@@ -327,7 +327,7 @@ python scripts/init_db.py
 ### Backend Health Check
 
 ```bash
-curl http://localhost:8000/health
+curl http://process.env.NEXT_PUBLIC_API_URL/health
 ```
 
 ### Database Connection
@@ -365,5 +365,5 @@ npm run build
 
 For issues or questions:
 1. Check logs: `backend/logs/` and browser console
-2. Review API documentation: `http://localhost:8000/docs`
+2. Review API documentation: `http://process.env.NEXT_PUBLIC_API_URL/docs`
 3. Check database: Use SQLite browser or psql for PostgreSQL

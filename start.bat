@@ -22,7 +22,7 @@ echo.
 
 REM Step 2: Start Backend
 echo [2/3] Starting Backend Server...
-echo Backend will run on http://localhost:8000
+echo Backend will run on http://process.env.NEXT_PUBLIC_API_URL
 start "eKYC Backend" cmd /k "python main.py"
 timeout /t 3 /nobreak >nul
 echo SUCCESS: Backend started
@@ -41,8 +41,8 @@ echo   System is now running!
 echo ========================================
 echo.
 echo Frontend:  http://localhost:3000
-echo Backend:   http://localhost:8000
-echo API Docs:  http://localhost:8000/docs
+echo Backend:   http://process.env.NEXT_PUBLIC_API_URL
+echo API Docs:  http://process.env.NEXT_PUBLIC_API_URL/docs
 echo.
 echo Press any key to open the frontend in your browser...
 pause >nul

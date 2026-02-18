@@ -8,7 +8,7 @@ import CNICUpload from "./CNICUpload";
 import FingerprintScanner from "./FingerprintScanner";
 import { ShieldCheck, CheckCircle, ArrowRight, AlertTriangle, Loader2 } from "lucide-react";
 
-const API_BASE = "http://localhost:8000/api/verify";
+const API_BASE = "http://process.env.NEXT_PUBLIC_API_URL/api/verify";
 
 export default function VerifyFlow({ token }) {
     const [step, setStep] = useState(0);

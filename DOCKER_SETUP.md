@@ -39,7 +39,7 @@ Starts:
 - FastAPI backend with hot-reload
 - Next.js frontend with dev server
 - Access frontend at `http://localhost:3000`
-- Access API at `http://localhost:8000`
+- Access API at `http://process.env.NEXT_PUBLIC_API_URL`
 
 ### Production Mode
 ```bash
@@ -107,7 +107,7 @@ DB_NAME=ekyc_db
 JWT_SECRET_KEY=your-secret-key-change-this-in-production
 
 LOG_LEVEL=INFO  # or DEBUG
-NEXT_PUBLIC_API_URL=http://localhost:8000/api
+NEXT_PUBLIC_API_URL=http://process.env.NEXT_PUBLIC_API_URL/api
 ```
 
 ---
@@ -180,7 +180,7 @@ docker images | grep ekyc
 ## Next Steps
 
 1. **Start development:** `docker compose --profile dev up -d`
-2. **Test API:** `curl http://localhost:8000/health`
+2. **Test API:** `curl http://process.env.NEXT_PUBLIC_API_URL/health`
 3. **Test Frontend:** Open `http://localhost:3000` in browser
 4. **Check logs:** `docker compose logs -f`
 5. **Deploy to production:** Use `--profile prod` and update `.env.local`

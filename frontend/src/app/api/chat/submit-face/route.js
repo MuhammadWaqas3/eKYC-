@@ -7,7 +7,7 @@ export async function POST(request) {
         const livenessVideo = formData.get('liveness_video');
         const sessionId = formData.get('session_id');
 
-        const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://process.env.NEXT_PUBLIC_API_URL';
 
         // Forward to backend /api/chat/submit-face endpoint
         const backendFormData = new FormData();

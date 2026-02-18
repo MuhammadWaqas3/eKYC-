@@ -8,7 +8,7 @@ export async function POST(request) {
         const { message, currentState, session_id } = body;
         const { step, userData } = currentState;
 
-        const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://process.env.NEXT_PUBLIC_API_URL';
 
         // 1. Call Python Backend for LLM Reply & DB Storage
         const backendResponse = await fetch(`${BACKEND_URL}/api/chat/webhook`, {
@@ -19,7 +19,7 @@ export async function POST(request) {
                 user_id: userData?.id || null,
                 session_id: session_id || null
             }),
-        }); 
+        });
 
         if (!backendResponse.ok) {
             throw new Error(`Backend Error: ${backendResponse.statusText}`);

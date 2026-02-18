@@ -2,7 +2,7 @@ import requests
 import uuid
 
 # Configuration
-BASE_URL = "http://localhost:8000/api/chat"
+BASE_URL = "http://process.env.NEXT_PUBLIC_API_URL/api/chat"
 SESSION_ID = str(uuid.uuid4())
 
 # 1. Create a dummy user session first by simulating a chat message

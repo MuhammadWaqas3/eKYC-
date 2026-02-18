@@ -75,7 +75,7 @@ venv\Scripts\activate
 python main.py
 ```
 
-API will be available at http://localhost:8000
+API will be available at http://process.env.NEXT_PUBLIC_API_URL
 
 ### Terminal 2 - Rasa Server
 
@@ -99,7 +99,7 @@ Actions server runs on http://localhost:5055
 
 ### 1. Test Backend API
 
-Visit: http://localhost:8000/docs
+Visit: http://process.env.NEXT_PUBLIC_API_URL/docs
 
 This will show the interactive Swagger API documentation.
 
@@ -149,7 +149,7 @@ venv\Scripts\activate
 
 ## Next Steps
 
-1. Test API endpoints using Swagger UI (http://localhost:8000/docs)
+1. Test API endpoints using Swagger UI (http://process.env.NEXT_PUBLIC_API_URL/docs)
 2. Train Rasa with more dialogue examples
 3. Build Next.js frontend for verification portal
 4. Add sample CNIC images for testing
@@ -159,7 +159,7 @@ venv\Scripts\activate
 
 ### User Registration
 ```bash
-POST http://localhost:8000/api/chat/register
+POST http://process.env.NEXT_PUBLIC_API_URL/api/chat/register
 {
   "name": "Ahmed Khan",
   "email": "ahmed@example.com",
@@ -169,12 +169,12 @@ POST http://localhost:8000/api/chat/register
 
 ### Generate Verification Link
 ```bash
-POST http://localhost:8000/api/chat/generate-link?user_id=1
+POST http://process.env.NEXT_PUBLIC_API_URL/api/chat/generate-link?user_id=1
 ```
 
 ### Check Status
 ```bash
-GET http://localhost:8000/api/chat/status/{session_id}
+GET http://process.env.NEXT_PUBLIC_API_URL/api/chat/status/{session_id}
 ```
 
 ## Project Structure
@@ -198,4 +198,4 @@ eKYC/
 
 - Documentation: See README.md
 - Security: See SECURITY.md
-- API Reference: http://localhost:8000/docs
+- API Reference: http://process.env.NEXT_PUBLIC_API_URL/docs

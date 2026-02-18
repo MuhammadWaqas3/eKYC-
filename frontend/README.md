@@ -36,7 +36,7 @@ npm install
 cp .env.local.example .env.local
 
 # Update .env.local with your backend URL
-NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_API_URL=http://process.env.NEXT_PUBLIC_API_URL
 ```
 
 ### Development

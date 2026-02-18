@@ -87,8 +87,8 @@ CONTAINER ID   IMAGE            NAMES
 
 Then access:
 - **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8000
-- **API Docs**: http://localhost:8000/docs
+- **Backend API**: http://process.env.NEXT_PUBLIC_API_URL
+- **API Docs**: http://process.env.NEXT_PUBLIC_API_URL/docs
 - **Database**: postgresql://postgres:postgres@localhost:5432/ekyc_db
 
 ---
