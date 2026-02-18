@@ -11,11 +11,11 @@ class Settings(BaseSettings):
     
     # Database
     # SQLite for development - no need for PostgreSQL server
-    DATABASE_URL: str = "sqlite:///./ekyc_db.sqlite"
+    DATABASE_URL: str = ""
     # PostgreSQL (requires running server): DATABASE_URL: str = "postgresql://postgres:password@localhost:5432/ekyc_db"
     
     # JWT
-    JWT_SECRET_KEY: str = "your-secret-key-change-this-in-production"
+    JWT_SECRET_KEY: str = ""
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     
@@ -23,12 +23,12 @@ class Settings(BaseSettings):
     APP_NAME: str = "Avanza Solutions eKYC"
     API_HOST: str = "0.0.0.0"
     API_PORT: int = 8000
-    FRONTEND_URL: str = "http://localhost:3000"
-    
+    FRONTEND_URL: str = "https://e-kyc-six.vercel.app/"   
 
-    
+
+
     # Security
-    ALLOWED_ORIGINS: str = "http://localhost:3000,http://localhost:8000"
+    ALLOWED_ORIGINS: str = "https://e-kyc-six.vercel.app/"
     MAX_FILE_SIZE_MB: int = 10
     
     # Computer Vision
@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     AUDIT_LOG_PATH: str = "./logs/audit.log"
 
     # LLM Settings
-    GROQ_API_KEY: str = "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"
+    GROQ_API_KEY: str = ""
     GROQ_API_URL: str = "https://api.groq.com/openai/v1/chat/completions"
     GROQ_MODEL: str = "llama-3.3-70b-versatile"
     
